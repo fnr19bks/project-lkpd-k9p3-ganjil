@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LKPD Interaktif — Struktur Tree dan Hierarki | Informatika Kelas IX</title>
+  <meta name="description" content="LKPD digital interaktif berbentuk game sederhana untuk topik Struktur Tree dan Hierarki, Informatika Kelas IX / Fase D, Berpikir Komputasional. Berjalan offline, tanpa login." />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- =====================================================================
+       HEADER (sticky) — logo, judul, progres global, tombol utilitas
+       ===================================================================== -->
+  <header class="app-header" id="appHeader">
+    <div class="header-brand">
+      <!-- GANTI file assets/logo.png dengan logo asli SMP Negeri 19 Kota Bekasi -->
+      <img src="assets/logo.png"
+           alt="Logo SMP Negeri 19 Kota Bekasi"
+           class="school-logo header-logo js-logo"
+           onerror="this.classList.add('is-missing');" />
+      <span class="logo-fallback">SMPN 19 Kota Bekasi</span>
+      <div class="header-text">
+        <span class="header-title">LKPD Interaktif — Struktur Tree dan Hierarki</span>
+        <span class="header-sub">Informatika Kelas IX &middot; Fase D &middot; Berpikir Komputasional</span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <div class="header-progress" title="Progres keseluruhan">
+        <span class="hp-item">Misi selesai: <strong id="hdrMissionCount">0/4</strong></span>
+        <span class="hp-item hp-stars" id="hdrStars" aria-label="Total bintang 0 dari 12"></span>
+      </div>
+      <button type="button" class="btn btn-small" id="btnSound" aria-label="Aktifkan atau matikan efek suara">Suara: Aktif</button>
+      <button type="button" class="btn btn-small" id="btnHelp" aria-label="Buka bantuan cara bermain">Bantuan</button>
+      <button type="button" class="btn btn-small" id="btnTeacher" aria-label="Buka mode guru">Guru</button>
+      <button type="button" class="btn btn-small" id="btnLang" aria-label="Ganti bahasa antarmuka antara Indonesia dan Inggris"></button>
+    </div>
+  </header>
+
+  <main class="app-main" id="appMain">
+
+    <!-- =================================================================
+         SCREEN 0 — COVER / SPLASH
+         Guru: ubah teks sambutan di bawah ini bila perlu.
+         ================================================================= -->
+    <section class="screen" id="screen-0" aria-label="Layar pembuka">
+      <div class="cover card">
+        <!-- GANTI file assets/logo.png dengan logo asli SMP Negeri 19 Kota Bekasi -->
+        <img src="assets/logo.png"
+             alt="Logo SMP Negeri 19 Kota Bekasi"
+             class="school-logo cover-logo js-logo"
+             onerror="this.classList.add('is-missing');" />
+        <span class="logo-fallback logo-fallback-lg">SMPN 19 Kota Bekasi</span>
+
+        <h1>LKPD Interaktif — Struktur Tree dan Hierarki</h1>
+        <p class="cover-sub">Informatika Kelas IX &middot; Fase D &middot; Berpikir Komputasional</p>
+
+        <div class="cover-name">
+          <label for="inputNamaAwal">Nama Murid (opsional)</label>
+          <input type="text" id="inputNamaAwal" class="text-input" placeholder="Contoh: Rani Anggraini" autocomplete="off" />
+        </div>
+
+        <button type="button" class="btn btn-primary btn-large" id="btnStart" data-i18n="startBtn" aria-label="Mulai misi belajar">Mulai Misi (Start Mission)</button>
+
+        <p class="cover-note">Klik tombol untuk memulai. Tidak perlu login. Kamu bisa mengulang kapan saja.</p>
+        <p class="cover-note cover-note-small">
+          Catatan: semua data (nama, bintang, jawaban, dan waktu) hanya tersimpan di perangkat kamu sendiri
+          melalui <em>localStorage</em> (penyimpanan lokal browser). Tidak ada data yang dikirim ke internet.
+        </p>
+      </div>
+    </section>
+
+    <!-- =================================================================
+         SCREEN 1 — PETA MISI (MISSION MAP)
+         ================================================================= -->
+    <section class="screen" id="screen-1" aria-label="Peta misi">
+      <h2 class="screen-title">Peta Misi (Mission Map)</h2>
+      <p class="screen-desc">Selesaikan keempat misi secara berurutan. Misi berikutnya terbuka setelah misi sebelumnya selesai.</p>
+
+      <div class="progress-wrap">
+        <div class="progress-label">Misi selesai: <strong id="mapProgressText">0/4</strong> &middot; Total bintang: <strong id="mapStarText">0/12</strong></div>
+        <div class="progress-bar" role="progressbar" aria-label="Progres misi" aria-valuemin="0" aria-valuemax="4" aria-valuenow="0" id="mapProgressBar">
+          <div class="progress-fill" id="mapProgressFill"></div>
+        </div>
+      </div>
+
+      <div class="mission-grid" id="missionGrid"></div>
+
+      <div class="nav-row">
+        <button type="button" class="btn btn-ghost btn-back" data-go="0" data-i18n="back" aria-label="Kembali ke layar pembuka">Kembali (Back)</button>
+        <button type="button" class="btn btn-primary" id="btnMapReport" data-i18n="report" aria-label="Lihat laporan akhir">Lihat Laporan (Report)</button>
+      </div>
+    </section>
+
+    <!-- =================================================================
+         SCREEN 2 — MISI 1: SUSUN POHON SEKOLAH (BUILD THE SCHOOL TREE)
+         ================================================================= -->
+    <section class="screen" id="screen-2" aria-label="Misi 1 susun pohon sekolah">
+      <h2 class="screen-title">Misi 1 — Susun Pohon Sekolah (Build the School Tree)</h2>
+      <p class="screen-desc">
+        Seret dan lepas (drag and drop) setiap kartu dari tumpukan ke slot pohon yang tepat.
+        Ingat: induk (parent) berada satu tingkat (level) di atas anak (child).
+      </p>
+
+      <div class="toolbar no-print">
+        <button type="button" class="btn btn-ghost btn-hint" id="btnHint1" data-i18n="hint" aria-label="Tampilkan petunjuk misi 1">Petunjuk (Hint)</button>
+        <button type="button" class="btn btn-ghost btn-retry" id="btnRetry1" data-i18n="retry" aria-label="Ulangi misi 1">Ulangi (Retry)</button>
+        <span class="toolbar-stat">Kesalahan: <strong id="m1Mistakes">0</strong></span>
+      </div>
+
+      <div class="m1-layout">
+        <div class="panel">
+          <h3 class="panel-title">Tumpukan Kartu (Card Pool)</h3>
+          <div class="pool" id="m1Pool"></div>
+        </div>
+
+        <div class="panel">
+          <h3 class="panel-title">Papan Pohon (Tree Board)</h3>
+          <div class="tree-canvas" id="m1Board">
+            <div class="tier-label">Tingkat 0 (Level 0) — Akar (Root)</div>
+            <div class="tier tier-0" id="m1Tier0"></div>
+            <div class="tier-sep" aria-hidden="true"></div>
+            <div class="tier-label">Tingkat 1 (Level 1) — Anak dari Akar</div>
+            <div class="tier tier-1" id="m1Tier1"></div>
+            <div class="tier-sep" aria-hidden="true"></div>
+            <div class="tier-label">Tingkat 2 (Level 2) — Anak dari OSIS</div>
+            <div class="tier tier-2" id="m1Tier2"></div>
+          </div>
+        </div>
+      </div>
+
+      <p class="inline-feedback" id="m1Feedback" role="status" aria-live="polite"></p>
+
+      <div class="nav-row">
+        <button type="button" class="btn btn-ghost btn-back" data-go="1" data-i18n="back" aria-label="Kembali ke peta misi">Kembali (Back)</button>
+        <button type="button" class="btn btn-primary btn-next" data-go="3" id="btnNext1" data-i18n="next" aria-label="Lanjut ke misi 2" disabled>Lanjut (Next)</button>
+      </div>
+    </section>
+
+    <!-- =================================================================
+         SCREEN 3 — MISI 2: RAPIKAN FOLDER RANI (TIDY RANI'S FOLDER)
+         ================================================================= -->
+    <section class="screen" id="screen-3" aria-label="Misi 2 rapikan folder Rani">
+      <h2 class="screen-title">Misi 2 — Rapikan Folder Rani (Tidy Rani&rsquo;s Folder)</h2>
+      <p class="screen-desc">
+        Seret dan lepas setiap berkas (file) ke subfolder yang paling tepat di dalam folder
+        <strong>Tugas_Sekolah</strong>. Setelah semua rapi, tuliskan path (jalur) lengkapnya.
+      </p>
+
+      <div class="toolbar no-print">
+        <button type="button" class="btn btn-ghost btn-hint" id="btnHint2" data-i18n="hint" aria-label="Tampilkan petunjuk misi 2">Petunjuk (Hint)</button>
+        <button type="button" class="btn btn-ghost btn-retry" id="btnRetry2" data-i18n="retry" aria-label="Ulangi misi 2">Ulangi (Retry)</button>
+        <span class="toolbar-stat">Kesalahan: <strong id="m2Mistakes">0</strong></span>
+      </div>
+
+      <div class="m2-layout">
+        <div class="panel">
+          <h3 class="panel-title">Berkas &amp; Folder Acak (Unsorted Files)</h3>
+          <div class="pool" id="m2Pool"></div>
+        </div>
+
+        <div class="panel">
+          <h3 class="panel-title">Folder Utama: Tugas_Sekolah</h3>
+          <div class="folder-tree" id="m2Folders"></div>
+        </div>
+      </div>
+
+      <div class="panel path-panel">
+        <h3 class="panel-title">Soal Isian — Path (Jalur) Lengkap</h3>
+        <label for="m2PathInput" class="field-label">Tuliskan path (jalur) lengkap ke <code>Tugas1_Tree.docx</code>:</label>
+        <div class="path-row">
+          <input type="text" id="m2PathInput" class="text-input" placeholder="Contoh: D:\Tugas_Sekolah\Informatika\Tugas1_Tree.docx" autocomplete="off" spellcheck="false" />
+          <button type="button" class="btn btn-accent" id="btnCheckPath" aria-label="Periksa jawaban path">Periksa (Check)</button>
+        </div>
+        <p class="inline-feedback" id="m2PathFeedback" role="status" aria-live="polite"></p>
+      </div>
+
+      <p class="inline-feedback" id="m2Feedback" role="status" aria-live="polite"></p>
+
+      <div class="nav-row">
+        <button type="button" class="btn btn-ghost btn-back" data-go="2" data-i18n="back" aria-label="Kembali ke misi 1">Kembali (Back)</button>
+        <button type="button" class="btn btn-primary btn-next" data-go="4" id="btnNext2" data-i18n="next" aria-label="Lanjut ke misi 3" disabled>Lanjut (Next)</button>
+      </div>
+    </section>
+
+    <!-- =================================================================
+         SCREEN 4 — MISI 3: JEJAK PATH (PATH TRACKER)
+         ================================================================= -->
+    <section class="screen" id="screen-4" aria-label="Misi 3 jejak path">
+      <h2 class="screen-title">Misi 3 — Jejak Path (Path Tracker)</h2>
+      <p class="screen-desc">Perhatikan struktur pohon sekolah berikut, lalu jawab 6 pertanyaan yang muncul satu per satu.</p>
+
+      <div class="m3-layout">
+        <div class="panel">
+          <h3 class="panel-title">Struktur Pohon Acuan (Reference Tree)</h3>
+<pre class="ascii-tree" aria-label="Diagram pohon struktur sekolah">
+Sekolah
+├── Kelas 7
+│   ├── 7A
+│   └── 7B
+├── Kelas 8
+│   ├── 8A
+│   └── 8B
+└── Kelas 9
+    ├── 9A
+    └── 9B
+        ├── Ketua
+        └── Wakil
+</pre>
+        </div>
+
+        <div class="panel">
+          <div class="quiz-head">
+            <span class="quiz-counter">Soal <strong id="m3Counter">1</strong> dari <strong id="m3Total">6</strong></span>
+            <span class="quiz-score">Benar: <strong id="m3Correct">0</strong></span>
+          </div>
+          <div class="progress-bar progress-bar-thin">
+            <div class="progress-fill" id="m3ProgressFill"></div>
+          </div>
+
+          <p class="question-text" id="m3Question">Memuat soal…</p>
+          <div class="options" id="m3Options"></div>
+          <p class="inline-feedback" id="m3Feedback" role="status" aria-live="polite"></p>
+
+          <div class="quiz-actions">
+            <button type="button" class="btn btn-ghost btn-hint" id="btnHint3" data-i18n="hint" aria-label="Tampilkan petunjuk misi 3">Petunjuk (Hint)</button>
+            <button type="button" class="btn btn-ghost btn-retry" id="btnRetry3" data-i18n="retry" aria-label="Ulangi misi 3">Ulangi (Retry)</button>
+            <button type="button" class="btn btn-accent" id="btnNextQuestion" aria-label="Lanjut ke pertanyaan berikutnya" disabled>Soal Berikutnya (Next)</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-row">
+        <button type="button" class="btn btn-ghost btn-back" data-go="3" data-i18n="back" aria-label="Kembali ke misi 2">Kembali (Back)</button>
+        <button type="button" class="btn btn-primary btn-next" data-go="5" id="btnNext3" data-i18n="next" aria-label="Lanjut ke misi 4" disabled>Lanjut (Next)</button>
+      </div>
+    </section>
+
+    <!-- =================================================================
+         SCREEN 5 — MISI 4: TANTANGAN CEPAT (QUICK CHALLENGE)
+         ================================================================= -->
+    <section class="screen" id="screen-5" aria-label="Misi 4 tantangan cepat">
+      <h2 class="screen-title">Misi 4 — Tantangan Cepat (Quick Challenge)</h2>
+      <p class="screen-desc">Jawab 5 soal campuran secepat mungkin. Setiap jawaban benar bernilai 20 poin.</p>
+
+      <div class="m4-layout">
+        <div class="panel">
+          <div class="quiz-head">
+            <span class="quiz-counter">Soal <strong id="m4Counter">1</strong> dari <strong id="m4Total">5</strong></span>
+            <span class="quiz-timer" id="m4Timer" hidden>Waktu: <strong id="m4TimerValue">60</strong> detik</span>
+          </div>
+          <div class="progress-bar progress-bar-thin">
+            <div class="progress-fill" id="m4ProgressFill"></div>
+          </div>
+
+          <p class="question-text" id="m4Question">Tekan tombol mulai untuk memulai tantangan.</p>
+          <div class="options" id="m4Options"></div>
+          <div class="short-answer" id="m4ShortWrap" hidden>
+            <label for="m4ShortInput" class="field-label" id="m4ShortLabel">Jawaban singkat:</label>
+            <div class="path-row">
+              <input type="text" id="m4ShortInput" class="text-input" autocomplete="off" spellcheck="false" />
+              <button type="button" class="btn btn-accent" id="btnM4Submit" aria-label="Kirim jawaban singkat">Kirim (Submit)</button>
+            </div>
+          </div>
+          <p class="inline-feedback" id="m4Feedback" role="status" aria-live="polite"></p>
+
+          <div class="quiz-actions">
+            <button type="button" class="btn btn-primary" id="btnM4Start" aria-label="Mulai tantangan cepat">Mulai Tantangan (Start)</button>
+            <button type="button" class="btn btn-ghost btn-retry" id="btnRetry4" data-i18n="retry" aria-label="Ulangi misi 4">Ulangi (Retry)</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-row">
+        <button type="button" class="btn btn-ghost btn-back" data-go="4" data-i18n="back" aria-label="Kembali ke misi 3">Kembali (Back)</button>
+        <button type="button" class="btn btn-primary btn-next" data-go="6" id="btnNext4" data-i18n="next" aria-label="Lanjut ke laporan akhir" disabled>Lanjut (Next)</button>
+      </div>
+    </section>
+
+    <!-- =================================================================
+         SCREEN 6 — LAPORAN AKHIR (FINAL REPORT)
+         ================================================================= -->
+    <section class="screen" id="screen-6" aria-label="Laporan akhir">
+      <div class="print-header" id="printHeader">
+        <img src="assets/logo.png" alt="Logo SMP Negeri 19 Kota Bekasi" class="school-logo print-logo js-logo" onerror="this.classList.add('is-missing');" />
+        <div>
+          <strong>LKPD Interaktif — Struktur Tree dan Hierarki</strong><br />
+          Informatika Kelas IX / Fase D &middot; SMP Negeri 19 Kota Bekasi
+        </div>
+      </div>
+
+      <h2 class="screen-title">Laporan Akhir (Final Report)</h2>
+
+      <div class="panel report-panel">
+        <div class="report-name">
+          <label for="inputNamaAkhir" class="field-label">Nama Murid (Student Name)</label>
+          <input type="text" id="inputNamaAkhir" class="text-input" placeholder="Tulis namamu di sini" autocomplete="off" />
+        </div>
+
+        <table class="report-table">
+          <caption class="sr-only">Ringkasan hasil belajar</caption>
+          <tbody>
+            <tr><th scope="row">Tanggal (Date)</th><td id="repTanggal">-</td></tr>
+            <tr><th scope="row">Total Bintang (Stars)</th><td id="repBintang">0 / 12</td></tr>
+            <tr><th scope="row">Misi Selesai (Missions)</th><td id="repMisi">0 / 4</td></tr>
+            <tr><th scope="row">Total Waktu (Total Time)</th><td id="repWaktu">-</td></tr>
+          </tbody>
+        </table>
+
+        <div class="report-detail" id="repDetail"></div>
+      </div>
+
+      <div class="nav-row no-print">
+        <button type="button" class="btn btn-ghost btn-back" data-go="1" data-i18n="back" aria-label="Kembali ke peta misi">Kembali (Back)</button>
+        <button type="button" class="btn btn-primary" id="btnPrint" aria-label="Cetak laporan">Cetak Laporan (Print Report)</button>
+        <button type="button" class="btn btn-accent" id="btnDownloadTxt" aria-label="Unduh laporan sebagai berkas teks">Unduh Laporan (.txt)</button>
+        <button type="button" class="btn btn-danger" id="btnResetAll" aria-label="Hapus semua data dan ulangi semua misi">Reset Semua Data</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =====================================================================
+       FOOTER (fixed)
+       ===================================================================== -->
+  <footer class="app-footer no-print">
+    <span id="footerText">LKPD Informatika Kelas 9 &middot; Struktur Tree dan Hierarki &middot; &copy; 2026 SMP Negeri 19 Kota Bekasi</span>
+  </footer>
+
+  <!-- =====================================================================
+       MODAL UMPAN BALIK (Feedback Modal)
+       ===================================================================== -->
+  <div class="modal-overlay" id="feedbackModal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="feedbackTitle">
+      <h3 id="feedbackTitle">Umpan Balik (Feedback)</h3>
+      <div class="modal-body" id="feedbackBody"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-primary" id="btnFeedbackOk" aria-label="Tutup umpan balik">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       MODAL BANTUAN (Help Modal)
+       ===================================================================== -->
+  <div class="modal-overlay" id="helpModal" hidden>
+    <div class="modal-card modal-card-wide" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+      <h3 id="helpTitle">Bantuan (Help)</h3>
+      <div class="modal-body">
+        <p><strong>Cara bermain (How to play):</strong></p>
+        <ol>
+          <li>Klik <em>Mulai Misi (Start)</em> pada layar pembuka.</li>
+          <li>Pilih misi pada Peta Misi. Misi terbuka secara berurutan.</li>
+          <li>Seret kartu dengan mouse, atau sentuh lalu geser dengan jari.</li>
+          <li>Bisa juga: klik satu kali pada kartu untuk memilih, lalu klik slot tujuan.</li>
+          <li>Setiap misi memberi bintang 1 sampai 3. Kumpulkan maksimal 12 bintang.</li>
+        </ol>
+        <p><strong>Lima poin konsep Tree (Pohon):</strong></p>
+        <ol>
+          <li><strong>Akar (Root)</strong> adalah simpul (node) paling atas dan tidak punya induk (parent).</li>
+          <li><strong>Induk (Parent)</strong> berada satu tingkat (level) di atas <strong>anak (child)</strong>.</li>
+          <li><strong>Saudara (Sibling)</strong> adalah simpul yang memiliki induk (parent) yang sama.</li>
+          <li><strong>Daun (Leaf)</strong> adalah simpul yang tidak memiliki anak (child).</li>
+          <li><strong>Path (Jalur)</strong> adalah urutan simpul dari akar menuju simpul tujuan, dan ditulis dengan pemisah <code>\</code> pada path folder.</li>
+        </ol>
+        <p><strong>Kontak guru:</strong> Guru Informatika SMP Negeri 19 Kota Bekasi (silakan hubungi melalui Google Classroom kelas masing-masing).</p>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-primary" id="btnHelpClose" aria-label="Tutup bantuan">Tutup (Close)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       MODAL MODE GURU (Teacher Mode)
+       ===================================================================== -->
+  <div class="modal-overlay" id="teacherModal" hidden>
+    <div class="modal-card modal-card-wide" role="dialog" aria-modal="true" aria-labelledby="teacherTitle">
+      <h3 id="teacherTitle">Mode Guru (Teacher Mode)</h3>
+      <div class="modal-body">
+        <p><strong>Kunci jawaban Misi 1 (Susun Pohon Sekolah):</strong></p>
+<pre class="ascii-tree ascii-small">
+SMP Nusantara 1
+├── Kelas 9A
+├── Kelas 9B
+└── OSIS
+    ├── Ketua Kelas
+    ├── Wakil Kelas
+    ├── Sekretaris
+    ├── Bendahara
+    ├── Seksi Acara
+    └── Seksi Dokumentasi
+</pre>
+        <p><strong>Kunci jawaban Misi 2 (Rapikan Folder Rani):</strong></p>
+        <ul>
+          <li>Tugas1_Tree.docx &rarr; Informatika</li>
+          <li>Tugas2_Algoritma.docx &rarr; Informatika</li>
+          <li>Gambar (folder) &rarr; Informatika</li>
+          <li>PR_BangunRuang.pdf &rarr; Matematika</li>
+          <li>Laporan_Percobaan.docx &rarr; IPA</li>
+          <li>Jadwal_Kelas.xlsx &rarr; Pribadi</li>
+          <li>Lagu.mp3 &rarr; Pribadi</li>
+          <li>Foto_Liburan.jpg &rarr; Pribadi</li>
+          <li>Path: <code>D:\Tugas_Sekolah\Informatika\Tugas1_Tree.docx</code> (garis miring <code>/</code> juga diterima)</li>
+        </ul>
+        <p><strong>Kunci jawaban Misi 3 (Jejak Path):</strong> 1-B, 2-B, 3-B, 4-C, 5-B, 6-C.</p>
+        <p><strong>Kunci jawaban Misi 4 (Tantangan Cepat):</strong> 1-B, 2-Kelas9, 3-uraian (kata kunci: tertingkat, terkelompok, hierarki, urut, jalur, mudah dicari, tidak bercampur), 4-C, 5-A.</p>
+        <p><strong>Cara menilai:</strong></p>
+        <ul>
+          <li>Misi 1 dan 2: 3 bintang bila 0 kesalahan, 2 bintang bila 1&ndash;3 kesalahan, 1 bintang bila lebih dari 3 kesalahan.</li>
+          <li>Misi 3: 3 bintang bila 6 benar, 2 bintang bila 4&ndash;5 benar, 1 bintang bila 1&ndash;3 benar.</li>
+          <li>Misi 4: 3 bintang bila skor 100, 2 bintang bila 60&ndash;80, 1 bintang bila 20&ndash;40.</li>
+        </ul>
+        <p><strong>Tips pembelajaran:</strong> minta murid menyebutkan akar, daun, dan satu contoh path sebelum menyeret kartu. Gunakan tombol <em>Reset Semua Data</em> sebelum kelas berikutnya memakai perangkat yang sama.</p>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-primary" id="btnTeacherClose" aria-label="Tutup mode guru">Tutup (Close)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Wadah notifikasi ringan (Toast) -->
+  <div class="toast-wrap" id="toastWrap" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
