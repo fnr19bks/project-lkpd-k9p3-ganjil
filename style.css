@@ -149,6 +149,18 @@ code { font-family: Consolas, 'Courier New', monospace; background: var(--color-
 .btn-small { font-size: 13px; min-height: 36px; padding: 8px 12px; background: rgba(255,255,255,0.16); color: #FFFFFF; border-color: rgba(255,255,255,0.35); box-shadow: none; }
 .btn-small:hover { background: rgba(255,255,255,0.28); filter: none; }
 
+/* Tombol Reset di header — beri warna merah agar mudah dikenali */
+.btn-reset {
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+  color: #FFFFFF;
+}
+.btn-reset:hover {
+  background: #96291D;
+  border-color: #96291D;
+  filter: none;
+}
+
 .btn-large { font-size: 18px; padding: 16px 34px; min-height: 56px; }
 
 #btnLang .lang-part { opacity: 0.55; }
