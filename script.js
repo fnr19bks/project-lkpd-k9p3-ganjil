@@ -1780,6 +1780,23 @@ function pasangEvent() {
     terapkanBahasa();
   });
 
+  // --- Tombol Reset di header ---
+  // Memungkinkan murid mengulang dari awal tanpa mengubah struktur keseluruhan.
+  const btnReset = document.getElementById("btnReset");
+  if (btnReset) {
+    btnReset.addEventListener("click", function () {
+      const konfirmasi = window.confirm(
+        "Apakah Anda yakin ingin mengulang dari awal?\n" +
+        "Semua progres (nama, bintang, jawaban, waktu) akan dihapus.\n\n" +
+        "Are you sure you want to start over?\n" +
+        "All progress (name, stars, answers, time) will be cleared."
+      );
+      if (konfirmasi) {
+        window.lkpdReset();
+      }
+    });
+  }
+
   // --- Laporan akhir ---
   document.getElementById("inputNamaAkhir").addEventListener("change", function () {
     state.nama = this.value.trim();
